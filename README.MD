@@ -13,7 +13,7 @@ pip install django strawberry-graphql django-channels daphne
 ### Description des bibliothèques
 
 Django : Framework principal pour la gestion des données et des vues.
-Strawberry-GraphQL : Fournit un schéma GraphQL simple à configurer.
+Strawberry-GraphQL : Fournit un schéma GraphQL simple à configurer. <br />
 Django-Channels : Ajoute la prise en charge d'ASGI pour des protocoles asynchrones comme les WebSockets.
 Daphne : Serveur ASGI utilisé pour exécuter l'application.
 
