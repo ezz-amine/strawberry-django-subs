@@ -88,13 +88,13 @@ Les WebSockets sont généralement utilisés pour implémenter les subscriptions
 
 Un WebSocket est un protocole de communication bidirectionnel qui permet une interaction en temps réel entre un client (comme un navigateur web) et un serveur.les WebSockets établissent une connexion persistante, permettant à l'un ou l'autre côté d'envoyer des données à tout moment.
 
-#### Structure de base d'un WebSocket :
+### Structure de base d'un WebSocket :
 Client : Établit une connexion avec un serveur via WebSocket.
 Serveur : Écoute les connexions entrantes et communique avec le client.
 
 Dans notre cas comme nous utilisons GraphQL avec Django Channels, donc nous devons configurer asgi.py pour inclure un routeur WebSocket et nous allons utiliser le django admin comme client HTTP:
 
-<img src= "picture/img1.png"><img/>
+<img src= "app_test/picture/img1.png"><img/>
 
 ## Création du schéma GraphQL avec une subscription
 
