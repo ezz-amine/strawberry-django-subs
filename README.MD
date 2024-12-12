@@ -194,6 +194,10 @@ Applications simples :
 Notre application est purement basée sur des requêtes HTTP classiques (REST API, sites web non interactifs).
 Nous n’avons pas besoin de WebSockets ou de streaming de données en temps réel.
 
+<img src= "app_test/picture/img2.png"><img/>
+<img src= "app_test/picture/img3.png"><img/>
+
+
 ## Test des subscriptions
 
 Voici un exemple sur le subscription coté backend avec GRAPHiQL. <br />
