@@ -16,3 +16,8 @@ class Patient(models.Model):
 
     def __str__(self):
         return self.name
+    
+class Doctor(models.Model):
+    name = models.CharField(max_length=100)
+    specialty = models.CharField(max_length=100)
+    hospital = models.CharField(max_length=100)

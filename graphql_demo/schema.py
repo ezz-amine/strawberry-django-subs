@@ -8,13 +8,14 @@ from strawberry.django.views import GraphQLView
 from strawberry.subscriptions import GRAPHQL_TRANSPORT_WS_PROTOCOL
 from strawberry.asgi import GraphQL
 
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 import django.apps
 
 Category_maladie = django.apps.apps.get_model('app_test', 'Category_maladie')
 Patient = django.apps.apps.get_model('app_test', 'Patient')
+Doctor = django.apps.apps.get_model('app_test', 'Doctor')
 
 
 # Types pour les modèles Django
@@ -61,6 +62,61 @@ class Subscription:
             #post_save.disconnect(patient_signal_handler, sender=Patient)
 
 
+    @strawberry.subscription
+    async def deleted_patient(self) -> AsyncGenerator[str, None]:
+        """Notifie lorsqu'un patient est supprimé."""
+        queue = asyncio.Queue()
+
+        @receiver(post_delete, sender=Patient)
+        def patient_deleted_handler(sender, instance, **kwargs):
+            async_to_sync(queue.put)(f"Patient supprimé : {instance.name}")
+
+        while True:
+            message = await queue.get()
+            yield message
+
+
+
+    ##############DOCTOR##################################
+    @strawberry.subscription
+    async def new_doctor(self) -> AsyncGenerator[str, None]:
+        """
+        Notifie lorsqu'un nouveau médecin est ajouté.
+        """
+        queue = asyncio.Queue()
+
+        @receiver(post_save, sender=Doctor)
+        def doctor_added_handler(sender, instance, created, **kwargs):
+            if created:
+                async_to_sync(queue.put)(f"Docteur ajouté : {instance.name}")
+
+    
+        while True:
+            message = await queue.get()
+            yield message
+
+
+ 
+    @strawberry.subscription
+    async def deleted_doctor(self) -> AsyncGenerator[str, None]:
+        """
+        Notifie lorsqu'un médecin est supprimé.
+        """
+        queue = asyncio.Queue()
+
+        @receiver(post_delete, sender=Doctor)
+        def doctor_deleted_handler(sender, instance, **kwargs):
+            async_to_sync(queue.put)(f"Docteur supprimé : {instance.name}")
+
+    
+        while True:
+            message = await queue.get()
+            yield message
+        
+            #post_delete.disconnect(doctor_deleted_handler, sender=Doctor)
+            
+
+
 # Résolveurs pour les mutations
 @strawberry.type
 class Mutation:
@@ -80,6 +136,36 @@ class Mutation:
             name=name, name_maladie=name_maladie, category_maladie=category
         )
         return patient
+    
+    @strawberry.mutation
+    def delete_patient(self, id: strawberry.ID) -> str:
+        patient = Patient.objects.get(id=id)
+        patient.delete()
+        return f"Patient avec ID {id} supprimé."
+    
+    ###############################DOCTOR#################33
+    
+    @strawberry.mutation
+    def add_doctor(self, name: str, specialty: str, hospital: str) -> str:
+        """
+        Ajoute un nouveau médecin.
+        """
+        doctor = Doctor.objects.create(name=name, specialty=specialty, hospital=hospital)
+        return f"Médecin {doctor.name} ajouté avec succès."
+
+
+    @strawberry.mutation
+    def delete_doctor(self, id: strawberry.ID) -> str:
+        """
+        Supprime un médecin.
+        """
+        try:
+            doctor = Doctor.objects.get(id=id)
+            doctor_name = doctor.name  # Sauvegarde le nom avant suppression
+            doctor.delete()
+            return f"Médecin {doctor_name} supprimé avec succès."
+        except Doctor.DoesNotExist:
+            return f"Médecin avec l'ID {id} n'existe pas."
 
 
 # Résolveurs pour les requêtes

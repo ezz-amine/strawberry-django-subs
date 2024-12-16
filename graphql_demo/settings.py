@@ -74,7 +74,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'graphql_demo.wsgi.application'
-ASGI_APPLICATION = "graphql_demo.asgi.application"
+ASGI_APPLICATION = "graphql_demo.asgi.application"#?????
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer",

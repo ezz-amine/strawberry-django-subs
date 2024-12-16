@@ -26,7 +26,7 @@ application = ProtocolTypeRouter({
     "http": django_asgi_app,
     "websocket": AuthMiddlewareStack(
         URLRouter([
-            # Ajouter les routes pour les WebSockets ici
+            #  les routes pour les WebSockets ici
             path("graphql/", graphql_app),
         ])
     ),
