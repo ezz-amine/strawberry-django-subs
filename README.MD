@@ -181,6 +181,13 @@ Protocoles asynchrones : Pour traiter les requêtes sans bloquer le thread princ
 
 Si votre application nécessite des interactions en temps réel, il est necessaire d'utiliser ASGI car il permet de maintenir des connexions ouvertes (WebSockets) et d’envoyer des données en temps réel aux clients.
 
+## Que se passe-t-il si on ne définit pas ASGI_APPLICATION ?
+Django continuera d'utiliser WSGI par défaut, ce qui signifie que : <br />
+Les fonctionnalités asynchrones comme les WebSockets ne fonctionneront pas. <br />
+Les requêtes GraphQL Subscriptions qui nécessitent WebSocket échoueront. <br />
+Notre serveur ne saura pas comment router les requêtes en mode asynchrone.
+
+
 Daphne est un serveur ASGI  conçu pour gérer les connexions HTTP et WebSocket de manière asynchrone.
 Il permet de lancer une application Django avec ASGI, assurant la compatibilité avec les WebSockets pour les subscriptions GraphQL.
 

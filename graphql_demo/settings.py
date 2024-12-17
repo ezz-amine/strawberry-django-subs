@@ -73,8 +73,9 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'graphql_demo.wsgi.application'
-ASGI_APPLICATION = "graphql_demo.asgi.application"#?????
+#WSGI_APPLICATION = 'graphql_demo.wsgi.application'
+ASGI_APPLICATION = "graphql_demo.asgi.application" 
+# chemin vers l'application ASGI qui sera utilisée pour gérer les requêtes HTTP et les WebSockets.
 
 CHANNEL_LAYERS = {
     "default": {
