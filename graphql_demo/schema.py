@@ -10,7 +10,7 @@ from strawberry.asgi import GraphQL
 
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-
+from typing import Dict
 import django.apps
 
 Category_maladie = django.apps.apps.get_model('app_test', 'Category_maladie')
@@ -33,10 +33,57 @@ class PatientType:
     name_maladie: str
     category_maladie: CategoryMaladieType
 
+@strawberry.input
+class DoctorInput:
+    name: str
+    specialty: str
+    contact: str
+
+@strawberry.input
+class PatientInput:
+    id: strawberry.ID
+    name: str
+    name_maladie: str
+    category_maladie: CategoryMaladieType
+
+@strawberry.input
+class ModelInput:
+    data: Dict[str, str] 
 
 # Résolveurs pour les abonnements
 @strawberry.type
 class Subscription:
+ 
+    # subscreptioin generaliser sur l'ajout d'un element
+    @strawberry.subscription
+    async def item_added(self) -> AsyncGenerator[str, None]:
+        """
+        Notifie en temps réel lorsqu'un élément est ajouté dans un modèle.
+        """
+        queue = asyncio.Queue()
+
+        # Gestionnaire de signal pour écouter les ajouts
+        def item_added_signal_handler(sender, instance, created, **kwargs):
+            if created:  # Si un élément a été ajouté
+                message = f"Nouvel élément ajouté dans {sender.__name__}: {instance}"
+                async_to_sync(queue.put)(message)
+
+        # Connexion des signaux aux modèles surveillés
+        models_to_watch = [Patient, Doctor]
+        for model in models_to_watch:
+            post_save.connect(item_added_signal_handler, sender=model)
+
+        try:
+            while True:
+                # Transmettre les messages aux abonnés
+                message = await queue.get()
+                yield message
+        finally:
+            # Déconnecter les signaux à la fin de l'abonnement
+            for model in models_to_watch:
+                post_save.disconnect(item_added_signal_handler, sender=model)
+
+
     @strawberry.subscription
     async def new_patient(self) -> AsyncGenerator[str, None]:
         """
@@ -77,7 +124,7 @@ class Subscription:
 
 
 
-    ##############DOCTOR##################################
+    ##############  DOCTOR   ##################################
     @strawberry.subscription
     async def new_doctor(self) -> AsyncGenerator[str, None]:
         """
@@ -120,6 +167,31 @@ class Subscription:
 # Résolveurs pour les mutations
 @strawberry.type
 class Mutation:
+
+
+    # mutation generaliser sur l'ajout d'un element
+    @strawberry.mutation
+    def add_item(self, info: Info, model: str, data:  "DoctorInput" | "PatientInput") -> str:
+        """
+        Ajoute un élément dans le modèle spécifié.
+        """
+        model_class = {"Patient": Patient, "Doctor": Doctor}
+        model_inputs = {
+        "Doctor": DoctorInput,
+        "Patient": PatientInput,
+        #"Category": CategoryInput
+        }
+        
+        model_classes = model_class.get(model)
+        model_input = model_inputs.get(model)
+
+        if not model_classes or not model_input:
+            return "Modèle ou entrée invalide."
+        
+        instance = model_classes.objects.create(**data.__dict__)
+        return f"{model} créé avec succès : {instance}"
+
+    ##############################################################
     @strawberry.mutation
     def add_patient(
         self,
